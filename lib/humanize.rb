@@ -10,30 +10,35 @@ module Humanize
 
 
   def humanize(locale: Humanize.config.default_locale,
-               decimals_as: Humanize.config.decimals_as)
+               decimals_as: Humanize.config.decimals_as,
+               config: config || {})
+
+    config.each do |key, value|
+      glossary(locale).merge!(key => value) if glossary(locale)[key]
+    end
 
     if self.class == Float
       if infinity = self.infinite?
         if infinity == 1
-          return WORDS[locale][:infinity]
+          return glossary(locale)[:infinity]
         else
-          return "#{WORDS[locale][:negative]} #{WORDS[locale][:infinity]}"
+          return "#{glossary(locale)[:negative]} #{glossary(locale)[:infinity]}"
         end
       elsif self.nan?
-        return WORDS[locale][:undefined]
+        return glossary(locale)[:undefined]
       end
     end
 
     number = self
     sign = []
     if number.zero?
-      return WORDS[locale][:zero]
+      return glossary(locale)[:zero]
     elsif number < 0
-      sign << WORDS[locale][:negative]
+      sign << glossary(locale)[:negative]
       number = number.abs
     end
 
-    number_grouping = WORDS[locale][:group_by]
+    number_grouping = glossary(locale)[:group_by]
     human_ary = []
     iteration = 0
     use_and = false
@@ -46,7 +51,7 @@ module Humanize
           conjunction = if human_ary.empty?
                           ''
                         else
-                          (use_and ? ' ' + WORDS[locale][:and] : WORDS[locale][:comma])
+                          (use_and ? ' ' + glossary(locale)[:and] : glossary(locale)[:comma])
                         end
           human_ary << LOTS[locale][iteration] + conjunction
         end
@@ -96,7 +101,11 @@ module Humanize
     yield(config)
   end
 
-private
+  private
+
+  def glossary(locale)
+    WORDS[locale]
+  end
 
   def exactly_one_thousand_in_french_or_turkish?(locale, remainder, human_ary)
     if remainder == 1

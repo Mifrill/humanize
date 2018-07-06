@@ -51,5 +51,5 @@ module Humanize
       :and => '',
       :comma => ''
     }
-  }
+  }.freeze
 end

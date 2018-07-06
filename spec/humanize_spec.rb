@@ -152,4 +152,9 @@ describe "Humanize" do
 
   end
 
+  describe 'when called with custom config' do
+    fit 'replace AND to & for output' do
+      expect(234.humanize(locale: :en, config: { and: '&' })).to eq('two hundred & thirty-four')
+    end
+  end
 end
